@@ -33,49 +33,49 @@ data "aws_iam_role" "lambda_role" {
 }
 
 resource "aws_lambda_function" "get_all_users" {
-  function_name = "get-all-users"
-  runtime       = "nodejs18.x"
+  function_name = "get_all_users"
+  runtime       = "nodejs16.x"
   handler       = "index.handler"
-  filename      = "lambda/get-all-users.zip"
+  filename      = "lambda/get_all_users.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
 
 resource "aws_lambda_function" "get_all_tasks" {
-  function_name = "get-all-tasks"
-  runtime       = "nodejs18.x"
+  function_name = "get_all_tasks"
+  runtime       = "nodejs16.x"
   handler       = "index.handler"
-  filename      = "lambda/get-all-tasks.zip"
+  filename      = "lambda/get_all_tasks.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
 
 resource "aws_lambda_function" "get_task" {
-  function_name = "get-task"
-  runtime       = "nodejs18.x"
+  function_name = "get_task"
+  runtime       = "nodejs16.x"
   handler       = "index.handler"
-  filename      = "lambda/get-task.zip"
+  filename      = "lambda/get_task.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
 
 resource "aws_lambda_function" "save_task" {
-  function_name = "save-task"
-  runtime       = "nodejs18.x"
+  function_name = "save_task"
+  runtime       = "nodejs16.x"
   handler       = "index.handler"
-  filename      = "lambda/save-task.zip"
+  filename      = "lambda/save_task.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
 
 resource "aws_lambda_function" "update_task" {
-  function_name = "update-task"
-  runtime       = "nodejs18.x"
+  function_name = "update_task"
+  runtime       = "nodejs16.x"
   handler       = "index.handler"
-  filename      = "lambda/update-task.zip"
+  filename      = "lambda/update_task.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
 
 resource "aws_lambda_function" "delete_task" {
-  function_name = "delete-task"
-  runtime       = "nodejs18.x"
+  function_name = "delete_task"
+  runtime       = "nodejs16.x"
   handler       = "index.handler"
-  filename      = "lambda/delete-task.zip"
+  filename      = "lambda/delete_task.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
