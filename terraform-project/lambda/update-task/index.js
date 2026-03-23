@@ -2,15 +2,15 @@ const AWS = require("aws-sdk");
 const dynamodb = new AWS.DynamoDB({ region: "eu-central-1" });
 
 exports.handler = (event, context, callback) => {
-    const { id, name, authorId } = event;
+    const { id, name, userId } = event;
     const params = {
-        TableName: "courses",
+        TableName: "tasks",
         Key: { id: { S: id } },
-        UpdateExpression: "SET #n = :name, authorId = :authorId",
+        UpdateExpression: "SET #n = :name, userId = :userId",
         ExpressionAttributeNames: { "#n": "name" },
         ExpressionAttributeValues: {
             ":name": { S: name },
-            ":authorId": { S: authorId }
+            ":userId": { S: userId }
         },
         ReturnValues: "UPDATED_NEW"
     };

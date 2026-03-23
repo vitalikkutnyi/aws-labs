@@ -12,19 +12,19 @@ terraform {
 
 }
 
-module "authors_table" {
+module "users_table" {
 
  source = "./modules/dynamodb"
 
- table_name = "authors"
+ table_name = "users"
 
 }
 
-module "courses_table" {
+module "tasks_table" {
 
  source = "./modules/dynamodb"
 
- table_name = "courses"
+ table_name = "tasks"
 
 }
 
@@ -32,50 +32,50 @@ data "aws_iam_role" "lambda_role" {
   name = "lambda-role"
 }
 
-resource "aws_lambda_function" "get_all_authors" {
-  function_name = "get-all-authors"
+resource "aws_lambda_function" "get_all_users" {
+  function_name = "get-all-users"
   runtime       = "nodejs18.x"
   handler       = "index.handler"
-  filename      = "lambda/get-all-authors.zip"
+  filename      = "lambda/get-all-users.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
 
-resource "aws_lambda_function" "get_all_courses" {
-  function_name = "get-all-courses"
+resource "aws_lambda_function" "get_all_tasks" {
+  function_name = "get-all-tasks"
   runtime       = "nodejs18.x"
   handler       = "index.handler"
-  filename      = "lambda/get-all-courses.zip"
+  filename      = "lambda/get-all-tasks.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
 
-resource "aws_lambda_function" "get_course" {
-  function_name = "get-course"
+resource "aws_lambda_function" "get_task" {
+  function_name = "get-task"
   runtime       = "nodejs18.x"
   handler       = "index.handler"
-  filename      = "lambda/get-course.zip"
+  filename      = "lambda/get-task.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
 
-resource "aws_lambda_function" "save_course" {
-  function_name = "save-course"
+resource "aws_lambda_function" "save_task" {
+  function_name = "save-task"
   runtime       = "nodejs18.x"
   handler       = "index.handler"
-  filename      = "lambda/save-course.zip"
+  filename      = "lambda/save-task.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
 
-resource "aws_lambda_function" "update_course" {
-  function_name = "update-course"
+resource "aws_lambda_function" "update_task" {
+  function_name = "update-task"
   runtime       = "nodejs18.x"
   handler       = "index.handler"
-  filename      = "lambda/update-course.zip"
+  filename      = "lambda/update-task.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
 
-resource "aws_lambda_function" "delete_course" {
-  function_name = "delete-course"
+resource "aws_lambda_function" "delete_task" {
+  function_name = "delete-task"
   runtime       = "nodejs18.x"
   handler       = "index.handler"
-  filename      = "lambda/delete-course.zip"
+  filename      = "lambda/delete-task.zip"
   role          = data.aws_iam_role.lambda_role.arn
 }
