@@ -42,68 +42,70 @@ resource "aws_api_gateway_method" "task_id_methods" {
 }
 
 resource "aws_api_gateway_method" "users_methods" {
-  for_each      = toset(["GET", "OPTIONS"])
-  rest_api_id   = aws_api_gateway_rest_api.tasks_api.id
-  resource_id   = aws_api_gateway_resource.users.id
-  http_method   = each.key
+  for_each = toset(["GET", "OPTIONS"])
+  rest_api_id = aws_api_gateway_rest_api.tasks_api.id
+  resource_id = aws_api_gateway_resource.users.id
+  http_method = each.key
   authorization = "NONE"
 }
 
+###############################################################################################
+
 resource "aws_api_gateway_integration" "tasks_integration" {
   for_each = {
-    GET     = aws_lambda_function.get_all_tasks.invoke_arn
-    POST    = aws_lambda_function.save_task.invoke_arn
+    GET = aws_lambda_function.get_all_tasks.invoke_arn
+    POST = aws_lambda_function.save_task.invoke_arn
     OPTIONS = "MOCK"
   }
-  rest_api_id             = aws_api_gateway_rest_api.tasks_api.id
-  resource_id             = aws_api_gateway_resource.tasks.id
-  http_method             = each.key
-  type                    = each.value == "MOCK" ? "MOCK" : "AWS_PROXY"
+  rest_api_id = aws_api_gateway_rest_api.tasks_api.id
+  resource_id = aws_api_gateway_resource.tasks.id
+  http_method = each.key
+  type = each.value == "MOCK" ? "MOCK" : "AWS_PROXY"
   integration_http_method = each.value == "MOCK" ? null : "POST"
-  uri                     = each.value == "MOCK" ? null : each.value
-  request_templates       = each.value == "MOCK" ? { "application/json" = "{\"statusCode\":200}" } : null
-  depends_on              = [aws_api_gateway_method.tasks_methods]
+  uri = each.value == "MOCK" ? null : each.value
+  request_templates = each.value == "MOCK" ? { "application/json" = "{\"statusCode\":200}" } : null
+  depends_on = [aws_api_gateway_method.tasks_methods]
 }
 
 resource "aws_api_gateway_integration" "task_id_integration" {
   for_each = {
-    GET     = aws_lambda_function.get_task.invoke_arn
-    PUT     = aws_lambda_function.update_task.invoke_arn
-    DELETE  = aws_lambda_function.delete_task.invoke_arn
+    GET = aws_lambda_function.get_task.invoke_arn
+    PUT = aws_lambda_function.update_task.invoke_arn
+    DELETE = aws_lambda_function.delete_task.invoke_arn
     OPTIONS = "MOCK"
   }
-  rest_api_id             = aws_api_gateway_rest_api.tasks_api.id
-  resource_id             = aws_api_gateway_resource.task_id.id
-  http_method             = each.key
-  type                    = each.key == "OPTIONS" ? "MOCK" : "AWS_PROXY"
+  rest_api_id = aws_api_gateway_rest_api.tasks_api.id
+  resource_id = aws_api_gateway_resource.task_id.id
+  http_method = each.key
+  type = each.key == "OPTIONS" ? "MOCK" : "AWS_PROXY"
   integration_http_method = each.key == "OPTIONS" ? null : "POST"
-  uri                     = each.key == "OPTIONS" ? null : each.value
-  request_templates       = each.key == "OPTIONS" ? { "application/json" = "{\"statusCode\":200}" } : null
-  depends_on              = [aws_api_gateway_method.task_id_methods]
+  uri = each.key == "OPTIONS" ? null : each.value
+  request_templates = each.key == "OPTIONS" ? { "application/json" = "{\"statusCode\":200}" } : null
+  depends_on = [aws_api_gateway_method.task_id_methods]
 }
 
 resource "aws_api_gateway_integration" "users_integration" {
   for_each = {
-    GET     = aws_lambda_function.get_all_users.invoke_arn
+    GET = aws_lambda_function.get_all_users.invoke_arn
     OPTIONS = "MOCK"
   }
-  rest_api_id             = aws_api_gateway_rest_api.tasks_api.id
-  resource_id             = aws_api_gateway_resource.users.id
-  http_method             = each.key
-  type                    = each.key == "OPTIONS" ? "MOCK" : "AWS_PROXY"
+  rest_api_id = aws_api_gateway_rest_api.tasks_api.id
+  resource_id = aws_api_gateway_resource.users.id
+  http_method = each.key
+  type = each.key == "OPTIONS" ? "MOCK" : "AWS_PROXY"
   integration_http_method = each.key == "OPTIONS" ? null : "POST"
-  uri                     = each.key == "OPTIONS" ? null : each.value
-  request_templates       = each.key == "OPTIONS" ? { "application/json" = "{\"statusCode\":200}" } : null
-  depends_on              = [aws_api_gateway_method.users_methods]
+  uri = each.key == "OPTIONS" ? null : each.value
+  request_templates = each.key == "OPTIONS" ? { "application/json" = "{\"statusCode\":200}" } : null
+  depends_on = [aws_api_gateway_method.users_methods]
 }
 
 ###############################################################################################
 
 resource "aws_api_gateway_method_response" "options_response" {
   for_each = {
-    tasks   = aws_api_gateway_resource.tasks.id
+    tasks = aws_api_gateway_resource.tasks.id
     task_id = aws_api_gateway_resource.task_id.id
-    users   = aws_api_gateway_resource.users.id
+    users = aws_api_gateway_resource.users.id
   }
   rest_api_id = aws_api_gateway_rest_api.tasks_api.id
   resource_id = each.value
@@ -124,9 +126,9 @@ resource "aws_api_gateway_method_response" "options_response" {
 
 resource "aws_api_gateway_integration_response" "options_integration_response" {
   for_each = {
-    tasks   = aws_api_gateway_resource.tasks.id
+    tasks = aws_api_gateway_resource.tasks.id
     task_id = aws_api_gateway_resource.task_id.id
-    users   = aws_api_gateway_resource.users.id
+    users = aws_api_gateway_resource.users.id
   }
   rest_api_id = aws_api_gateway_rest_api.tasks_api.id
   resource_id = each.value
@@ -151,18 +153,18 @@ resource "aws_api_gateway_integration_response" "options_integration_response" {
 
 resource "aws_lambda_permission" "tasks_lambda_permissions" {
   for_each = {
-    get_all_tasks  = aws_lambda_function.get_all_tasks.function_name
-    save_task      = aws_lambda_function.save_task.function_name
-    get_task       = aws_lambda_function.get_task.function_name
-    update_task    = aws_lambda_function.update_task.function_name
-    delete_task    = aws_lambda_function.delete_task.function_name
-    get_all_users  = aws_lambda_function.get_all_users.function_name
+    get_all_tasks = aws_lambda_function.get_all_tasks.function_name
+    save_task = aws_lambda_function.save_task.function_name
+    get_task = aws_lambda_function.get_task.function_name
+    update_task = aws_lambda_function.update_task.function_name
+    delete_task = aws_lambda_function.delete_task.function_name
+    get_all_users = aws_lambda_function.get_all_users.function_name
   }
-  statement_id  = "AllowExecutionFromAPIGateway-${each.key}"
-  action        = "lambda:InvokeFunction"
+  statement_id = "AllowExecutionFromAPIGateway-${each.key}"
+  action = "lambda:InvokeFunction"
   function_name = each.value
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.tasks_api.execution_arn}/*/*"
+  principal = "apigateway.amazonaws.com"
+  source_arn = "${aws_api_gateway_rest_api.tasks_api.execution_arn}/*/*"
 }
 
 ###############################################################################################

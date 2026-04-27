@@ -1,32 +1,34 @@
 const AWS = require("aws-sdk");
-const dynamodb = new AWS.DynamoDB({ region: "eu-central-1" });
 
-exports.handler = (event, context, callback) => {
-    const params = { TableName: "users" };
+const dynamodb = new AWS.DynamoDB.DocumentClient({
+  region: "eu-central-1"
+});
 
-    dynamodb.scan(params, (err, data) => {
-        const response = {
-            headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*"
-            }
-        };
+exports.handler = async (event) => {
+  try {
+    const data = await dynamodb.scan({
+      TableName: "users"
+    }).promise();
 
-        if (err) {
-            response.statusCode = 500;
-            response.body = JSON.stringify({ error: err.message });
-            callback(null, response);
-        } else {
-            const users = data.Items.map(item => ({
-                id: item.id ? item.id.S : null,
-                firstName: item.firstName ? item.firstName.S : null,
-                lastName: item.lastName ? item.lastName.S : null
-            }));
+    const users = data.Items.map(item => ({
+      id: item.id,
+      firstName: item.firstName,
+      lastName: item.lastName
+    }));
 
-            response.statusCode = 200;
-            response.body = JSON.stringify(users);
-            
-            callback(null, response);
-        }
-    });
+    return {
+      statusCode: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      },
+      body: JSON.stringify(users)
+    };
+
+  } catch (err) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message })
+    };
+  }
 };
