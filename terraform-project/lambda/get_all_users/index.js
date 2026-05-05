@@ -4,8 +4,18 @@ const dynamodb = new AWS.DynamoDB.DocumentClient({
   region: "eu-central-1"
 });
 
+const cloudwatch = new AWS.CloudWatch({
+  region: "eu-central-1"
+});
+
 exports.handler = async (event) => {
+
   try {
+
+    if (event.testError) {
+      throw new Error("TEST ERROR");
+    }
+
     const data = await dynamodb.scan({
       TableName: "users"
     }).promise();
@@ -19,16 +29,26 @@ exports.handler = async (event) => {
     return {
       statusCode: 200,
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+        "Access-Control-Allow-Headers": "*"
       },
       body: JSON.stringify(users)
     };
 
   } catch (err) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message })
-    };
+
+    await cloudwatch.putMetricData({
+      Namespace: "MyApp/Metrics",
+      MetricData: [
+        {
+          MetricName: "AppErrors",
+          Value: 1,
+          Unit: "Count"
+        }
+      ]
+    }).promise();
+
+    throw err;
   }
 };

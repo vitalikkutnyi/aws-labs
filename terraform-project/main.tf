@@ -200,3 +200,128 @@ resource "aws_cloudfront_distribution" "frontend" {
     response_page_path = "/index.html"
   }
 }
+
+########################################
+########################################
+########################################
+
+resource "aws_iam_policy" "lambda_logs" {
+  name = "lambda-logs-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Action = [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      Resource = "*"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_logs_attach" {
+  role       = data.aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.lambda_logs.arn
+}
+
+resource "aws_iam_policy" "cloudwatch_put_metric" {
+  name = "cloudwatch-put-metric"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect = "Allow",
+      Action = [
+        "cloudwatch:PutMetricData"
+      ],
+      Resource = "*"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "attach_metric" {
+  role       = data.aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.cloudwatch_put_metric.arn
+}
+
+############################
+
+resource "aws_sns_topic" "alerts" {
+  name = "app-alerts-topic"
+}
+
+resource "aws_sns_topic_subscription" "email" {
+  topic_arn = aws_sns_topic.alerts.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
+############################
+
+resource "aws_cloudwatch_metric_alarm" "lambda_errors_all" {
+  alarm_name          = "lambda-errors-all-functions"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "Errors"
+  namespace           = "AWS/Lambda"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 1
+
+  alarm_actions = [
+    aws_sns_topic.alerts.arn
+  ]
+}
+
+resource "aws_cloudwatch_metric_alarm" "custom_app_errors" {
+  alarm_name          = "custom-app-errors"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "AppErrors"
+  namespace           = "MyApp/Metrics"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 0
+
+  alarm_actions = [
+    aws_sns_topic.alerts.arn
+  ]
+}
+
+############################
+
+resource "aws_sns_topic" "billing_alerts" {
+  provider = aws.billing
+  name     = "billing-alerts-topic"
+}
+
+resource "aws_sns_topic_subscription" "billing_email" {
+  provider  = aws.billing
+  topic_arn = aws_sns_topic.billing_alerts.arn
+  protocol  = "email"
+  endpoint  = var.alert_email
+}
+
+resource "aws_cloudwatch_metric_alarm" "billing_alarm" {
+  provider = aws.billing
+
+  alarm_name          = "monthly-billing-alarm"
+  namespace           = "AWS/Billing"
+  metric_name         = "EstimatedCharges"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = 0.001
+  evaluation_periods  = 1
+  period              = 21600
+  statistic           = "Maximum"
+
+  dimensions = {
+    Currency = "USD"
+  }
+
+  alarm_actions = [
+    aws_sns_topic.billing_alerts.arn
+  ]
+}
