@@ -1,4 +1,4 @@
-const API_URL = "https://eydevtyoc8.execute-api.eu-central-1.amazonaws.com/dev";
+const API_URL = process.env.REACT_APP_API_URL;
 
 export const getTasks = () =>
   fetch(`${API_URL}/tasks`).then(res => res.json());
